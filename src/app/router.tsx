@@ -13,4 +13,14 @@ export const router = createBrowserRouter([
       { path: '/datenschutz', element: <DatenschutzPage /> },
     ],
   },
+  // Pages d'authentification : sans header ni footer du site, avec leur propre cadre.
+  // Chargées à la demande, pour que les visiteurs du site ne téléchargent pas Keycloak.
+  {
+    path: '/login',
+    lazy: () => import('@/features/auth/LoginPage').then((m) => ({ Component: m.LoginPage })),
+  },
+  {
+    path: '/register',
+    lazy: () => import('@/features/auth/RegisterPage').then((m) => ({ Component: m.RegisterPage })),
+  },
 ])

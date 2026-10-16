@@ -1,4 +1,4 @@
-import { MenuIcon, MessageCircleIcon, XIcon } from 'lucide-react'
+import { LogInIcon, MenuIcon, MessageCircleIcon, XIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ActionButton } from '@/components/common/ActionButton'
 import { Container } from '@/components/common/Container'
@@ -51,6 +51,10 @@ export function Header() {
               <MessageCircleIcon aria-hidden="true" />
             </a>
           </ActionButton>
+          <Link to={t.loginLink.href} className={cn(navLinkClass, 'hidden gap-1.5 px-2 md:inline-flex')}>
+            <LogInIcon aria-hidden="true" className="size-4" />
+            {t.loginLink.label}
+          </Link>
           <ActionButton asChild className="hidden sm:inline-flex">
             <Link to={t.quoteCta.href}>{t.quoteCta.label}</Link>
           </ActionButton>
@@ -105,6 +109,14 @@ export function Header() {
                     {t.whatsappLabel}
                   </a>
                 </ActionButton>
+                <SheetClose asChild>
+                  <ActionButton asChild size="lg" variant="ghost">
+                    <Link to={t.loginLink.href}>
+                      <LogInIcon aria-hidden="true" />
+                      {t.loginLink.label}
+                    </Link>
+                  </ActionButton>
+                </SheetClose>
               </div>
             </SheetContent>
           </Sheet>

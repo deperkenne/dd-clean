@@ -10,6 +10,7 @@ type HeaderContent = {
   navLabel: string
   links: NavLink[]
   quoteCta: NavLink
+  loginLink: NavLink
   whatsappLabel: string
   languageLabel: string
   openMenuLabel: string
@@ -27,6 +28,7 @@ export const headerContent: Localized<HeaderContent> = {
       { label: 'Contact', href: '/#contact' },
     ],
     quoteCta: { label: 'Demander un devis', href: '/#contact' },
+    loginLink: { label: 'Se connecter', href: '/login' },
     whatsappLabel: 'Écrire sur WhatsApp',
     languageLabel: 'Choisir la langue',
     openMenuLabel: 'Ouvrir le menu',
@@ -42,6 +44,7 @@ export const headerContent: Localized<HeaderContent> = {
       { label: 'Kontakt', href: '/#contact' },
     ],
     quoteCta: { label: 'Angebot anfordern', href: '/#contact' },
+    loginLink: { label: 'Anmelden', href: '/login' },
     whatsappLabel: 'Per WhatsApp schreiben',
     languageLabel: 'Sprache wählen',
     openMenuLabel: 'Menü öffnen',
@@ -57,6 +60,7 @@ export const headerContent: Localized<HeaderContent> = {
       { label: 'Contact', href: '/#contact' },
     ],
     quoteCta: { label: 'Get a quote', href: '/#contact' },
+    loginLink: { label: 'Log in', href: '/login' },
     whatsappLabel: 'Message us on WhatsApp',
     languageLabel: 'Choose language',
     openMenuLabel: 'Open menu',
