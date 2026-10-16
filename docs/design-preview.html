@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>D&amp;D Clean — Design preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Geist:wght@400..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #0E1A1A;
+    --forest: #0F5C4D;
+    --forest-700: #0B463B;
+    --citron: #D9F26B;
+    --mint: #E6F2EC;
+    --paper: #FAFAF7;
+    --white: #FFFFFF;
+    --line: #DDE3DF;
+    --muted: #4A5654;
+    --success: #1F7A4D;
+    --warning: #B7791F;
+    --error: #C2410C;
+    --info: #1D5F8C;
+
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'Geist', 'Segoe UI', sans-serif;
+    --mono: 'Geist Mono', Consolas, monospace;
+
+    --r-sm: 6px; --r-md: 10px; --r-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--paper); color: var(--ink); font: 16px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+  .wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+  @media (min-width: 768px) { .wrap { padding: 0 32px; } }
+  section.block { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  @media (min-width: 1024px) { section.block { padding: 88px 0; } }
+  .eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--forest); margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+  .eyebrow::before { content: ''; width: 24px; height: 1px; background: currentColor; }
+  h2.label { font: 600 28px/1.15 var(--display); margin-bottom: 32px; }
+
+  /* Specimen */
+  .spec { display: grid; gap: 32px; }
+  @media (min-width: 1024px) { .spec { grid-template-columns: 1fr 1fr; } }
+  .spec .role { font: 500 12px var(--mono); color: var(--muted); margin-bottom: 8px; }
+  .hero-type { font: 600 clamp(48px, 9vw, 96px)/.95 var(--display); letter-spacing: -.02em; }
+  .hero-type em { font-style: italic; font-weight: 400; color: var(--forest); }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+  th { font: 500 12px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  td.num { text-align: right; }
+  pre { font: 13px/1.6 var(--mono); background: var(--ink); color: var(--mint); padding: 16px; border-radius: var(--r-md); overflow-x: auto; }
+
+  /* Palette */
+  .swatches { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 40px; }
+  @media (min-width: 768px) { .swatches { grid-template-columns: repeat(4, 1fr); } }
+  .sw { border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; background: var(--white); }
+  .sw div { height: 72px; }
+  .sw p { padding: 8px 12px; font-size: 13px; }
+  .sw code { font: 12px var(--mono); color: var(--muted); display: block; }
+  .comps { display: grid; gap: 24px; }
+  @media (min-width: 1024px) { .comps { grid-template-columns: repeat(3, 1fr); } }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { min-height: 44px; padding: 0 20px; border-radius: var(--r-sm); font: 600 15px var(--body); border: 1px solid transparent; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; }
+  .btn-primary { background: var(--forest); color: var(--white); }
+  .btn-primary:hover { background: var(--forest-700); }
+  .btn-secondary { background: var(--white); color: var(--ink); border-color: var(--ink); }
+  .btn-ghost { background: transparent; color: var(--forest); }
+  .btn-citron { background: var(--citron); color: var(--ink); }
+  .field { display: grid; gap: 6px; font-size: 14px; }
+  .field input { min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--r-sm); font: 15px var(--body); background: var(--white); }
+  .field input.focus { outline: 2px solid var(--forest); outline-offset: 1px; border-color: var(--forest); }
+  .field input.err { border-color: var(--error); }
+  .field small { color: var(--error); }
+  .alert { padding: 10px 14px; border-radius: var(--r-sm); font-size: 14px; border-left: 3px solid; background: var(--white); }
+  .card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; }
+
+  /* Mockup */
+  .mock { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+  .m-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--line); gap: 12px; }
+  .logo { display: inline-flex; align-items: baseline; gap: 6px; font: 700 22px var(--display); color: var(--ink); text-decoration: none; }
+  .logo .amp { color: var(--forest); font-style: italic; font-weight: 500; }
+  .logo .clean { font: 600 13px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+  .m-nav { display: none; gap: 28px; font-size: 15px; }
+  .m-nav a { color: var(--ink); text-decoration: none; }
+  @media (min-width: 1024px) { .m-nav { display: flex; } }
+  .lang { font: 500 12px var(--mono); display: flex; gap: 2px; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 2px; }
+  .lang span { padding: 6px 8px; border-radius: 4px; }
+  .lang .on { background: var(--ink); color: var(--paper); }
+  .m-hero { display: grid; gap: 40px; padding: 48px 20px; }
+  @media (min-width: 1024px) { .m-hero { grid-template-columns: 1.3fr 1fr; padding: 80px 48px; align-items: end; } }
+  .m-hero h1 { font: 600 clamp(40px, 7vw, 76px)/.98 var(--display); letter-spacing: -.02em; }
+  .m-hero h1 em { font-style: italic; font-weight: 400; color: var(--forest); }
+  .m-hero p.lead { font-size: 18px; color: var(--muted); max-width: 46ch; margin: 20px 0 28px; }
+  .ticket { background: var(--ink); color: var(--paper); border-radius: var(--r-lg); padding: 24px; }
+  .ticket h3 { font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--citron); margin-bottom: 16px; }
+  .ticket ul { list-style: none; padding: 0; display: grid; gap: 12px; }
+  .ticket li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed rgba(250,250,247,.2); padding-bottom: 12px; font-size: 15px; }
+  .ticket li span:last-child { font-family: var(--mono); color: var(--citron); }
+  .m-services { padding: 56px 20px; background: var(--paper); border-top: 1px solid var(--line); }
+  @media (min-width: 1024px) { .m-services { padding: 80px 48px; } }
+  .m-services h2 { font: 600 clamp(30px, 4.5vw, 48px)/1.05 var(--display); margin-bottom: 40px; max-width: 18ch; }
+  .svc-list { display: grid; border-top: 1px solid var(--ink); }
+  @media (min-width: 768px) { .svc-list { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1440px) { .svc-list { grid-template-columns: repeat(3, 1fr); } }
+  .svc { padding: 28px 0 28px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; }
+  @media (min-width: 768px) { .svc { padding: 28px 24px 28px 0; } }
+  .svc .n { font: 500 13px var(--mono); color: var(--forest); padding-top: 6px; }
+  .svc h3 { font: 600 22px/1.2 var(--display); }
+  .svc p { grid-column: 2; color: var(--muted); font-size: 15px; }
+  .svc .tags { grid-column: 2; display: flex; gap: 6px; margin-top: 6px; }
+  .tag { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; padding: 4px 8px; border-radius: 4px; background: var(--mint); color: var(--forest-700); }
+  .m-steps { padding: 56px 20px; background: var(--ink); color: var(--paper); }
+  @media (min-width: 1024px) { .m-steps { padding: 80px 48px; } }
+  .m-steps h2 { font: 600 clamp(30px, 4.5vw, 48px)/1.05 var(--display); margin-bottom: 40px; }
+  .steps { display: grid; gap: 28px; counter-reset: s; }
+  @media (min-width: 768px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .steps { grid-template-columns: repeat(4, 1fr); } }
+  .step { border-top: 2px solid var(--citron); padding-top: 16px; }
+  .step .n { font: 500 13px var(--mono); color: var(--citron); }
+  .step h3 { font: 600 20px var(--display); margin: 8px 0; }
+  .step p { color: rgba(250,250,247,.72); font-size: 15px; }
+  .m-cta { padding: 56px 20px; background: var(--citron); color: var(--ink); display: grid; gap: 24px; }
+  @media (min-width: 1024px) { .m-cta { padding: 72px 48px; grid-template-columns: 1.4fr 1fr; align-items: center; } }
+  .m-cta h2 { font: 600 clamp(30px, 5vw, 56px)/1 var(--display); }
+  .m-cta h2 em { font-style: italic; font-weight: 400; }
+  .m-cta .btn-primary { background: var(--ink); }
+  .note { margin-top: 16px; font: 12px var(--mono); color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="block" style="padding-top:40px">
+  <div class="wrap">
+    <p class="eyebrow">Design system · preview</p>
+    <a class="logo" href="#"><span>D</span><span class="amp">&amp;</span><span>D</span><span class="clean">Clean</span></a>
+    <p style="margin-top:12px;color:var(--muted);max-width:60ch">Nettoyage professionnel à Nürnberg — Airbnb, hôtels, bureaux, fin de chantier, voitures, canapés. Direction : <strong>Utilitaire raffiné</strong>.</p>
+  </div>
+</header>
+
+<section class="block">
+  <div class="wrap">
+    <p class="eyebrow">01 · Typographie</p>
+    <div class="spec">
+      <div>
+        <p class="role">DISPLAY — Fraunces 600 / italique 400</p>
+        <p class="hero-type">Impeccable. <em>À chaque passage.</em></p>
+      </div>
+      <div style="display:grid;gap:24px">
+        <div>
+          <p class="role">BODY — Geist 400, 16/1.6</p>
+          <p>Entre deux réservations Airbnb, il reste souvent trois heures. Nos équipes changent le linge, désinfectent la cuisine et la salle de bain, vérifient chaque détail et vous envoient les photos avant l'arrivée des voyageurs.</p>
+        </div>
+        <div>
+          <p class="role">DATA — Geist Mono / tabular-nums</p>
+          <table>
+            <tr><th>Prestation</th><th>Délai</th><th class="num">Dès</th></tr>
+            <tr><td>Rotation Airbnb (T2)</td><td>24 h</td><td class="num">00,00 €</td></tr>
+            <tr><td>Bureaux · 200 m²</td><td>48 h</td><td class="num">000,00 €</td></tr>
+            <tr><td>Canapé 3 places</td><td>72 h</td><td class="num">00,00 €</td></tr>
+          </table>
+          <p class="note">Prix factices — à remplacer.</p>
+        </div>
+        <div>
+          <p class="role">CODE — Geist Mono</p>
+<pre>export const services = [
+  { id: 'airbnb', icon: KeyRound, audience: ['pro', 'private'] },
+  { id: 'hotels', icon: BedDouble, audience: ['pro'] },
+]</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <p class="eyebrow">02 · Couleur &amp; composants</p>
+    <div class="swatches">
+      <div class="sw"><div style="background:#0E1A1A"></div><p>Ink<code>#0E1A1A</code></p></div>
+      <div class="sw"><div style="background:#0F5C4D"></div><p>Forest (primary)<code>#0F5C4D</code></p></div>
+      <div class="sw"><div style="background:#D9F26B"></div><p>Citron (accent)<code>#D9F26B</code></p></div>
+      <div class="sw"><div style="background:#E6F2EC"></div><p>Mint (surface)<code>#E6F2EC</code></p></div>
+      <div class="sw"><div style="background:#FAFAF7"></div><p>Paper (fond)<code>#FAFAF7</code></p></div>
+      <div class="sw"><div style="background:#DDE3DF"></div><p>Line<code>#DDE3DF</code></p></div>
+      <div class="sw"><div style="background:#4A5654"></div><p>Muted (texte 2)<code>#4A5654</code></p></div>
+      <div class="sw"><div style="background:linear-gradient(90deg,#1F7A4D 25%,#B7791F 25% 50%,#C2410C 50% 75%,#1D5F8C 75%)"></div><p>Sémantiques<code>ok · warn · err · info</code></p></div>
+    </div>
+    <div class="comps">
+      <div class="card" style="display:grid;gap:16px">
+        <p class="role" style="font:500 12px var(--mono);color:var(--muted)">BOUTONS</p>
+        <div class="row">
+          <a class="btn btn-primary" href="#">Demander un devis</a>
+          <a class="btn btn-secondary" href="#">WhatsApp</a>
+        </div>
+        <div class="row">
+          <a class="btn btn-ghost" href="#">Voir les services →</a>
+          <a class="btn btn-citron" href="#">Appeler</a>
+        </div>
+      </div>
+      <div class="card" style="display:grid;gap:16px">
+        <p class="role" style="font:500 12px var(--mono);color:var(--muted)">CHAMPS</p>
+        <label class="field">Nom<input placeholder="Votre nom" /></label>
+        <label class="field">E-mail<input class="focus" value="anna@beispiel.de" /></label>
+        <label class="field">Téléphone<input class="err" value="0911" /><small>Numéro incomplet.</small></label>
+      </div>
+      <div class="card" style="display:grid;gap:10px">
+        <p class="role" style="font:500 12px var(--mono);color:var(--muted)">ALERTES</p>
+        <p class="alert" style="border-color:var(--success)">Demande envoyée. Réponse sous 24 h.</p>
+        <p class="alert" style="border-color:var(--warning)">Créneau du samedi presque complet.</p>
+        <p class="alert" style="border-color:var(--error)">Impossible d'envoyer la demande.</p>
+        <p class="alert" style="border-color:var(--info)">Intervention aussi à Fürth et Erlangen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <p class="eyebrow">03 · Mockup landing</p>
+    <div class="mock">
+      <div class="m-head">
+        <a class="logo" href="#"><span>D</span><span class="amp">&amp;</span><span>D</span><span class="clean">Clean</span></a>
+        <nav class="m-nav"><a href="#">Services</a><a href="#">Pourquoi nous</a><a href="#">Contact</a></nav>
+        <div class="row" style="align-items:center;gap:10px">
+          <div class="lang"><span class="on">FR</span><span>DE</span><span>EN</span></div>
+          <a class="btn btn-primary" href="#">Devis</a>
+        </div>
+      </div>
+      <div class="m-hero">
+        <div>
+          <p class="eyebrow">Nettoyage professionnel · Nürnberg &amp; région</p>
+          <h1>Impeccable.<br /><em>À chaque passage.</em></h1>
+          <p class="lead">Locations Airbnb, hôtels, bureaux, fins de chantier, voitures et canapés. Une seule équipe, 7j/7, pour les particuliers comme pour les pros.</p>
+          <div class="row">
+            <a class="btn btn-primary" href="#">Demander un devis gratuit</a>
+            <a class="btn btn-secondary" href="#">Écrire sur WhatsApp</a>
+          </div>
+        </div>
+        <aside class="ticket" aria-label="Exemple de passage">
+          <h3>Rotation Airbnb · ex.</h3>
+          <ul>
+            <li><span>Linge changé</span><span>✓</span></li>
+            <li><span>Cuisine &amp; salle de bain</span><span>✓</span></li>
+            <li><span>Consommables réassortis</span><span>✓</span></li>
+            <li><span>Photos envoyées à l'hôte</span><span>✓</span></li>
+          </ul>
+        </aside>
+      </div>
+      <div class="m-services">
+        <p class="eyebrow">Services</p>
+        <h2>Six métiers, un même niveau d'exigence.</h2>
+        <div class="svc-list">
+          <article class="svc"><span class="n">01</span><h3>Airbnb &amp; locations courtes</h3><p>Rotation complète entre deux séjours, linge et contrôle photo.</p><div class="tags"><span class="tag">Pro</span><span class="tag">Particulier</span></div></article>
+          <article class="svc"><span class="n">02</span><h3>Hôtels</h3><p>Chambres et parties communes, en renfort ou en continu.</p><div class="tags"><span class="tag">Pro</span></div></article>
+          <article class="svc"><span class="n">03</span><h3>Bureaux</h3><p>Espaces de travail propres avant l'arrivée des équipes.</p><div class="tags"><span class="tag">Pro</span></div></article>
+          <article class="svc"><span class="n">04</span><h3>Fin de chantier</h3><p>Poussière, traces de peinture, vitres : prêt à livrer.</p><div class="tags"><span class="tag">Pro</span><span class="tag">Particulier</span></div></article>
+          <article class="svc"><span class="n">05</span><h3>Voitures</h3><p>Intérieur et extérieur, sièges, tapis, plastiques.</p><div class="tags"><span class="tag">Particulier</span><span class="tag">Pro</span></div></article>
+          <article class="svc"><span class="n">06</span><h3>Canapés</h3><p>Nettoyage en profondeur et détachage des assises.</p><div class="tags"><span class="tag">Particulier</span></div></article>
+        </div>
+      </div>
+      <div class="m-steps">
+        <p class="eyebrow" style="color:var(--citron)">Fonctionnement</p>
+        <h2>Quatre étapes, zéro surprise.</h2>
+        <div class="steps">
+          <div class="step"><span class="n">01</span><h3>Demande de devis</h3><p>Par téléphone, WhatsApp ou e-mail.</p></div>
+          <div class="step"><span class="n">02</span><h3>Intervention planifiée</h3><p>Un créneau confirmé, une équipe dédiée.</p></div>
+          <div class="step"><span class="n">03</span><h3>Nettoyage effectué</h3><p>Selon une check-list précise.</p></div>
+          <div class="step"><span class="n">04</span><h3>Vérification</h3><p>Contrôle final et retour client.</p></div>
+        </div>
+      </div>
+      <div class="m-cta">
+        <h2>On s'occupe du propre. <em>Vous, du reste.</em></h2>
+        <div class="row">
+          <a class="btn btn-primary" href="#">Appeler</a>
+          <a class="btn btn-secondary" href="#">WhatsApp</a>
+          <a class="btn btn-ghost" style="color:var(--ink)" href="#">E-mail →</a>
+        </div>
+      </div>
+    </div>
+    <p class="note">Contenu de démonstration — coordonnées et textes définitifs à fournir.</p>
+  </div>
+</section>
+
+</body>
+</html>

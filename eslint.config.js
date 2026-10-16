@@ -19,4 +19,12 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Composants générés par shadcn/ui : jamais modifiés à la main,
+    // ils exportent aussi leurs variantes (cva) à côté du composant.
+    files: ['src/components/ui/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])
