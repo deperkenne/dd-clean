@@ -33,6 +33,8 @@ export const loginContent: Localized<LoginContent> = {
       config: "La connexion n'est pas encore disponible. Réessayez plus tard ou contactez D&D Clean.",
       callback: 'La connexion a été annulée ou refusée. Vous pouvez réessayer.',
       invalid_token: "Votre compte n'a pas pu être vérifié. Contactez l'administrateur D&D Clean.",
+      session_rejected:
+        "Votre session a expiré ou a été refusée par le serveur. Reconnectez-vous ; si ce message revient aussitôt, contactez l'administrateur D&D Clean.",
       unknown: 'Le service de connexion ne répond pas. Vérifiez votre connexion internet et réessayez.',
     },
   },
@@ -53,6 +55,8 @@ export const loginContent: Localized<LoginContent> = {
         'Die Anmeldung ist noch nicht verfügbar. Bitte versuchen Sie es später erneut oder kontaktieren Sie D&D Clean.',
       callback: 'Die Anmeldung wurde abgebrochen oder abgelehnt. Bitte versuchen Sie es erneut.',
       invalid_token: 'Ihr Konto konnte nicht geprüft werden. Bitte wenden Sie sich an die D&D-Clean-Verwaltung.',
+      session_rejected:
+        'Ihre Sitzung ist abgelaufen oder wurde vom Server abgelehnt. Bitte melden Sie sich erneut an; erscheint diese Meldung sofort wieder, wenden Sie sich an die D&D-Clean-Verwaltung.',
       unknown:
         'Der Anmeldedienst antwortet nicht. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.',
     },
@@ -73,6 +77,8 @@ export const loginContent: Localized<LoginContent> = {
       config: "Sign-in isn't available yet. Please try again later or contact D&D Clean.",
       callback: 'Sign-in was cancelled or refused. Please try again.',
       invalid_token: 'Your account could not be verified. Please contact the D&D Clean administrator.',
+      session_rejected:
+        'Your session expired or was refused by the server. Please sign in again; if this message comes straight back, contact the D&D Clean administrator.',
       unknown: "The sign-in service isn't responding. Check your internet connection and try again.",
     },
   },

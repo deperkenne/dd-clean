@@ -33,6 +33,7 @@ export function LoginPage() {
         size="lg"
         className="w-full"
         onClick={login}
+        disabled={!canLogin}
         aria-busy={isBusy}
       >
         {isBusy ? (

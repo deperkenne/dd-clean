@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLocale } from '@/hooks/useLocale'
-import { returnToSchema } from './auth.schema'
+import { returnToSchema, SESSION_REJECTED_REASON } from './auth.schema'
 import { keycloakAdapter } from './keycloak.adapter'
+import { homePathFor } from './roleRoutes'
 import { toAuthErrorCode, useAuthSession } from './useAuthSession'
 
 /**
@@ -23,16 +24,21 @@ export function useLogin() {
   const [searchParams] = useSearchParams()
   const returnTo = returnToSchema.parse(searchParams.get('returnTo') ?? undefined)
   const { session, isLoading, errorCode: sessionError } = useAuthSession()
+  // Arrivée ici parce que l'API a refusé le jeton (401) : on l'explique au lieu de rester muet.
+  const wasRejected = searchParams.get('reason') === SESSION_REJECTED_REASON
 
-  const isAuthenticated = session?.status === 'authenticated'
+  // Rôles lus dans le jeton Keycloak : ils décident de l'espace d'arrivée.
+  const roles = session?.status === 'authenticated' ? session.user.roles : undefined
 
   useEffect(() => {
-    if (isAuthenticated) navigate(returnTo, { replace: true })
-  }, [isAuthenticated, navigate, returnTo])
+    if (!roles) return
+    // Sans page demandée (returnTo = accueil), chaque rôle arrive dans SON
+    // espace ; sinon on rouvre la page demandée, que RequireRole revérifie.
+    navigate(returnTo === '/' ? homePathFor(roles) : returnTo, { replace: true })
+  }, [roles, navigate, returnTo])
 
   const login = useMutation({
     mutationFn: () => {
-      console.log("start login")
       // Keycloak renverra ici même, avec la page de retour conservée dans l'adresse.
       const redirectUri = new URL('/login', window.location.origin)
       redirectUri.searchParams.set('returnTo', returnTo)
@@ -41,12 +47,12 @@ export function useLogin() {
   })
 
   // L'échec du départ vers Keycloak, plus récent, passe avant celui du démarrage.
-  const errorCode = toAuthErrorCode(login.error) ?? sessionError
+  const errorCode = toAuthErrorCode(login.error) ?? sessionError ?? (wasRejected ? 'session_rejected' : undefined)
 
   return {
     login: () => login.mutate(),
     /** Vrai pendant le démarrage, le départ vers Keycloak ou la redirection finale. */
-    isBusy: isLoading || login.isPending || login.isSuccess || isAuthenticated,
+    isBusy: isLoading || login.isPending || login.isSuccess || roles !== undefined,
     /** Sans configuration Keycloak valide, réessayer échouerait à coup sûr. */
     canLogin: errorCode !== 'config',
     errorCode,

@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AuthError, keycloakAdapter } from './keycloak.adapter'
-import type { AuthErrorCode } from './auth.types'
+import { AuthError, type AuthErrorCode } from './auth.types'
+import { keycloakAdapter } from './keycloak.adapter'
 
 /** Clé de cache TanStack Query de la session, partagée par tous les hooks d'auth. */
 export const authSessionKey = ['auth', 'session'] as const
@@ -40,5 +40,6 @@ export function useAuthSession() {
     isLoading: session.isPending,
     errorCode: toAuthErrorCode(session.error),
     logout: () => logout.mutate(),
+    isLoggingOut: logout.isPending,
   }
 }

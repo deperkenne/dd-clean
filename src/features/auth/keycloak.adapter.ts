@@ -49,19 +49,10 @@
  * d'identité, seul ce fichier serait à réécrire.
  */
 import Keycloak from 'keycloak-js' // est un SDK
-import { keycloakConfigSchema, tokenClaimsSchema } from './auth.schema'
-import type { AuthAdapter, AuthErrorCode, AuthSession } from './auth.types'
-
-/** Erreur d'authentification portant un code que les pages traduisent en message. */
-export class AuthError extends Error {
-  readonly code: AuthErrorCode
-
-  constructor(code: AuthErrorCode) {
-    super(`Erreur d'authentification : ${code}`)
-    this.name = 'AuthError'
-    this.code = code
-  }
-}
+import { expireSession } from '@/lib/http'
+import { logError } from '@/lib/log'
+import { keycloakConfigSchema, rolesFromClaims, tokenClaimsSchema } from './auth.schema'
+import { AuthError, type AuthAdapter, type AuthSession } from './auth.types'
 
 /** Marge (en secondes) : on renouvelle le jeton s'il expire dans moins de 30 s. */
 const MIN_TOKEN_VALIDITY = 30
@@ -70,25 +61,39 @@ let keycloak: Keycloak | undefined
 let initialization: Promise<AuthSession> | undefined
 
 /**
+ * Keycloak refuse de renouveler le jeton (session fermée côté serveur, refresh
+ * token expiré) : on oublie la session et on renvoie l'utilisateur vers /login.
+ * Un client Keycloak ne s'initialise qu'une fois : le prochain `init()` en recrée un.
+ */
+function endSession(client: Keycloak) {
+  client.clearToken()
+  initialization = undefined
+  keycloak = undefined
+  expireSession()
+}
+
+/**
  * Crée le client Keycloak au premier besoin, après avoir vérifié la
  * configuration : sans URL, realm ou client ID valides, inutile d'appeler le serveur.
  */
 function getClient(): Keycloak {
   if (keycloak) return keycloak
-  
+
   // recuperation et validation des variable d'environmemnt
   const config = keycloakConfigSchema.safeParse(import.meta.env)
-   console.log("start element",config.data?.clientId)
   if (!config.success) throw new AuthError('config')
-  
+
   const client = new Keycloak(config.data)
   // Jeton bientôt expiré → on en demande un neuf avec le refresh token.
-  // Si Keycloak refuse (session fermée côté serveur), on oublie les jetons.
+  // Si Keycloak refuse (session fermée côté serveur), on ferme la session ici aussi.
   // attention ceci est une promesse (un gestionaire d'evenements(event listener ) qui ecoute)
   // et serra declencher seulement si l'evenement expiration du token se produit
-  // plus tard   
+  // plus tard
   client.onTokenExpired = () => {
-    client.updateToken(MIN_TOKEN_VALIDITY).catch(() => client.clearToken())
+    client.updateToken(MIN_TOKEN_VALIDITY).catch((error: unknown) => {
+      console.warn('[auth] Rafraîchissement du jeton refusé, session fermée', { error })
+      endSession(client)
+    })
   }
   keycloak = client
   return client
@@ -104,15 +109,17 @@ function readSession(client: Keycloak, authenticated: boolean): AuthSession {
     throw new AuthError('invalid_token')
   }
 
-  const { sub, email, name, realm_access: roles } = claims.data
+  const { sub, email, name } = claims.data
+  // Rôles du realm ET rôles de notre client Keycloak (là où se trouve AGENT).
+  const roles = rolesFromClaims(claims.data, client.clientId)
   return { status: 'authenticated', user: { id: sub, email, name, roles } }
 }
 
 // au premier rendu quand le user ouvre l'app 
 // authenticated == false car l'url n'aurras aucun token ni de code 
 async function startClient(): Promise<AuthSession> {
-  const client = getClient()
   try {
+    const client = getClient()
     // Si l'adresse contient le « code » renvoyé par Keycloak (étape 3), init()
     // l'échange contre les jetons (étape 4). Sinon, l'utilisateur est anonyme.
     const authenticated = await client.init({
@@ -123,10 +130,17 @@ async function startClient(): Promise<AuthSession> {
     })
     return readSession(client, authenticated)
   } catch (error) {
-    if (error instanceof AuthError) throw error
     // Keycloak renvoie { error, error_description } quand il refuse ou que
     // l'utilisateur annule ; tout le reste (réseau, serveur) est « unknown ».
-    throw new AuthError(error && typeof error === 'object' && 'error' in error ? 'callback' : 'unknown')
+    const failure =
+      error instanceof AuthError
+        ? error
+        : new AuthError(error && typeof error === 'object' && 'error' in error ? 'callback' : 'unknown', {
+            cause: error,
+          })
+    // Journalisée une fois : les requêtes suivantes, qui réutilisent cette initialisation, ne la relogguent pas.
+    logError('[auth] Initialisation Keycloak échouée', failure)
+    throw failure
   }
 }
 
@@ -139,10 +153,8 @@ export const keycloakAdapter: AuthAdapter = {
 
   /** Étape 1 du flux : redirige vers la page de connexion Keycloak. */
   async login({ redirectUri, locale }) {
-     console.log("url", redirectUri)
     await this.init()
     await getClient().login({ redirectUri, locale })
-   
   },
 
   /** Ferme la session côté Keycloak (pas seulement dans ce navigateur), puis revient sur notre site. */
@@ -156,7 +168,13 @@ export const keycloakAdapter: AuthAdapter = {
     const session = await this.init()
     if (session.status === 'anonymous') return undefined
     const client = getClient()
-    await client.updateToken(MIN_TOKEN_VALIDITY)
+    try {
+      await client.updateToken(MIN_TOKEN_VALIDITY)
+    } catch (error) {
+      // Renouvellement refusé : la session est finie, inutile d'appeler l'API avec un jeton périmé.
+      endSession(client)
+      throw new AuthError('unknown', { cause: error })
+    }
     return client.token
   },
 }
